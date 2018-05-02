@@ -1,0 +1,18 @@
+Definitions --------
+
+predictability = average amount of correlation between any two points at the same date in two years (0-1)
+
+
+
+buy point = point in an annual cycle of a stock with high predictability in which it is predicted to rise at least 5%, given that the current year is remaining as predictable as the previous ones.
+
+hold time = interval during which stock should be held, as long as rise or fall is predicted to remain increasing at a rate of 
+
+sell point = point at which a buy or short stock should be sold, based on predicted margins dropping below 5%
+
+short point point in an annual cycle of a stock with high predictability in which it is predicted to fall at least 5%
+
+interest period = object that holds buy or short point, hold time, sell point, predictability exclusively of hold time, and all data that led to its creation.
+
+
+certainty = percentage 0-100 which should be multiplied by available funds in order to decide how much to invest in a stock, based on predictability * interest period predictability

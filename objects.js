@@ -1,0 +1,3 @@
+function growthPeriod(timeInterval, values) {
+    
+}
