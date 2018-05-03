@@ -4,10 +4,16 @@ function DataStruct(name, values, index) {
     this.index = index;
     this.combinedValues = []
     this.smoothedValues = [];
+    this.intervals = [];
+    this.smoothedMappedValues = [];
+    this.averagedVals = [];
+    this.shortest = 0;
     this.numOfValues = 0;
     this.high = [];
     this.low = [];
     this.average = [];
+    this.tenMinimums = [[]];
+    this.tenMaximums = [[]];
     this.predictability = 0;
     this.yearPAverage = [0, 0, 0, 0, 0];
     for (let j = 0; j < this.values.length; j++) {
@@ -16,13 +22,31 @@ function DataStruct(name, values, index) {
         this.average[j] = average(values[j]);
         this.combinedValues = this.combinedValues.concat(values[j]);
     }
-    this.combinedSmoothedValues = smoothArray(this.combinedValues, 5);
+    this.combinedSmoothedValues = smoothArray(this.combinedValues, 10);
     this.overallHigh = max(this.high);
     this.overallLow = min(this.low);
     this.overallAverage = average(this.average);
     for (let i = 0; i < this.values.length; i++) {
         this.smoothedValues[i] = this.combinedSmoothedValues.slice(this.numOfValues, this.numOfValues + this.values[i].length);
         this.numOfValues+=this.values[i].length;
+    }
+    for (let j = 0; j < this.values.length; j++) {
+        this.smoothedMappedValues[j] = smoothArray(this.values[j], 7);
+        let low = min(this.smoothedMappedValues[j]);
+        let high = max(this.smoothedMappedValues[j]);
+        for (let i = 0; i < this.smoothedMappedValues[j].length; i++) {
+            this.smoothedMappedValues[j][i] = map(this.smoothedMappedValues[j][i], low, high, 0, 1);
+        }
+        if (this.smoothedMappedValues[j].length < this.smoothedMappedValues[this.shortest].length && j != 5) {
+            this.shortest = j;
+        }
+    }
+    for (let i = 0; i < this.smoothedMappedValues[this.shortest].length; i++) {
+        let averagable = [];
+        for (let j = 0; j < this.smoothedMappedValues.length - 1; j++) {
+            averagable[j] = this.smoothedMappedValues[j][i]
+        }
+        this.averagedVals[i] = average(averagable);
     }
     
     this.calculatePredictability = function() {
@@ -37,6 +61,36 @@ function DataStruct(name, values, index) {
     }
     
     this.predictability = this.calculatePredictability();
+    
+    this.setMaxAndMins = function() {
+        //let blank = [];
+        for (let i = 0; i < this.smoothedValues.length; i++) {
+            this.tenMaximums[i] = [];
+            this.tenMinimums[i] = [];
+        }
+    }
+    
+    this.calculateMaxAndMins = function() {
+        let foundMins = 0;
+        let foundMaxs = 0;
+        
+        this.setMaxAndMins();
+        
+        for (let j = 0; j < this.smoothedMappedValues.length; j++) {
+            foundMins = 0;
+            foundMaxs = 0;
+            for (let i = 1; i < this.smoothedMappedValues[j].length - 1; i++) {
+                if (this.smoothedMappedValues[j][i] > this.smoothedMappedValues[j][i+1] && this.smoothedMappedValues[j][i] > this.smoothedMappedValues[j][i-1]) {
+                    this.tenMaximums[j][foundMaxs] = createVector(i, this.smoothedMappedValues[j][i]); 
+                    foundMaxs++;
+                } else if (this.smoothedMappedValues[j][i] < this.smoothedMappedValues[j][i+1] && this.smoothedMappedValues[j][i] < this.smoothedMappedValues[j][i-1]) {
+                    this.tenMinimums[j][foundMins] = createVector(i, this.smoothedMappedValues[j][i]);
+                    foundMins++;
+                }
+            }
+        }
+    }
+    
     
     this.graphWithOutMapping = function(x, y, xScale, yScale) {
         graphFields.push([this.index, 0, x, y, xScale, yScale]);
@@ -151,12 +205,41 @@ function DataStruct(name, values, index) {
             stroke(0, 0, 255);
             noFill();
             beginShape();
-            for (let i = 0; i < this.smoothedValues[j].length; i++) {
-                vertex(c*xdist, map(this.smoothedValues[j][(this.smoothedValues[j].length - i)], this.low[j], this.high[j], gridHeight, 0));
+            for (let i = 0; i < this.smoothedMappedValues[j].length; i++) {
+                vertex(c*xdist, map(this.smoothedMappedValues[j][(this.smoothedMappedValues[j].length - i)], 0, 1, gridHeight, 0));
                 c++;
             }
             endShape();
         }
+        fill(100);
+        stroke(0);
+        textSize(gridHeight / 8);
+        rect(0, 0, textWidth(this.name), gridHeight / 7.5);
+        fill(0, 255, 0);
+        textAlign(LEFT, TOP);
+        text(this.name, 0, 0);
+        resetMatrix();
+    }
+    
+    this.graphAverage = function(x, y, xScale, yScale) {
+        //graphFields.push([this.index, 3, x, y, xScale, yScale]);
+        translate(x, y);
+        let gridWidth = width*xScale;
+        let gridHeight = height*yScale;
+        let xdist = gridWidth / this.averagedVals.length;
+        fill(255);
+        rect(0, 0, gridWidth, gridHeight);
+        stroke(0, 255, 0);
+        line(0,map(average(this.averagedVals), 0, 1, gridHeight, 0), gridWidth, map(average(this.averagedVals), 0, 1, gridHeight, 0))
+        let c = 0;
+        stroke(0, 0, 255);
+        noFill();
+        beginShape();
+        for (let i = 0; i < this.averagedVals.length; i++) {
+            vertex(c*xdist, map(this.averagedVals[(this.averagedVals.length - i)], 0, 1, gridHeight, 0));
+            c++;
+        }
+        endShape();
         fill(100);
         stroke(0);
         textSize(gridHeight / 8);
@@ -193,6 +276,17 @@ function DataStruct(name, values, index) {
      
     } */
     
+    this.pickIntervals = function() {
+        for (let j = 0; j < this.averagedVals.length - 1; j++) {
+            let xdist = (this.averagedVals[j].length - 1) / 10;
+            for (let i = 0; i <= 10; i++) {
+                if (this.averagedVals[j][xdist*(i+1)] - this.averagedVals[j][xdist*i] > .1) {
+                    this.intervals.push(new intervalToStudy(xdist*i, xdist*(i+1)));
+                }
+            }
+        }
+    }
+    
     
     this.logToConsole = function() {
         console.log("name: " + this.name);
@@ -202,4 +296,9 @@ function DataStruct(name, values, index) {
             console.log("average year#" + i + ": " + this.average[i]);
         }
     }
+}
+
+function intervalToStudy(start, end) {
+    this.start = start;
+    this.end = end;
 }

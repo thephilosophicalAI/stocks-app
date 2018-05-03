@@ -1,5 +1,3 @@
-//test
-
 function gotData(data) {
     dates = Object.keys(data["Time Series (Daily)"]);
     let closingNumbers =[[],[],[],[],[],[]];
@@ -55,8 +53,8 @@ function windowResized() {
 }
 
 function smoothArray(array, smoothFactor) {
-    let smoothedArray = []
-    for (let i= 0; i < smoothFactor; i++) {
+    let smoothedArray = [];
+    for (let i = 0; i < smoothFactor; i++) {
         smoothedArray[i] = average(array.slice(0, i+smoothFactor));
     }
     for (let i = smoothFactor; i < array.length - smoothFactor + 1; i++) {

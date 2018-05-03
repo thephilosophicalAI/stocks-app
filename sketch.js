@@ -15,7 +15,7 @@ function setup() {
     strokeWeight(3);
     textAlign(CENTER);
     index = floor(random(symbols.length));
-    getData("msft");
+    getData(symbols[index]);
     loadA = 0;
     loadR = width / 20;
 }
@@ -23,10 +23,12 @@ function setup() {
 function draw() {
     background(0);
     if (ready) {
-        dataStructs[dataStructs.length - 1].graphWithOutMapping(0, 0, .495, .495);
-        dataStructs[dataStructs.length - 1].graphWithMapping(0, height / 2, .495, .5);
-        dataStructs[dataStructs.length - 1].graphSmoothWithOutMapping(width/2, 0, .5, .49);
-        dataStructs[dataStructs.length - 1].graphSmoothWithMapping(width/2, height / 2, .5, .5);
+        noLoop();
+        //dataStructs[dataStructs.length - 1].graphWithOutMapping(0, 0, 1, .495);
+        //dataStructs[dataStructs.length - 1].graphWithMapping(0, height / 2, .5, .5);
+        //dataStructs[dataStructs.length - 1].graphSmoothWithOutMapping(0, 0, 1, .495);
+        dataStructs[dataStructs.length - 1].graphAverage(0, 0, 1, .495);
+        dataStructs[dataStructs.length - 1].graphSmoothWithMapping(0, height / 2, 1, .5);
         let col = color(random(255), random(255), random(255));
         stroke(col);
         textSize(100);
